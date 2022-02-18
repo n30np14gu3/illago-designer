@@ -2,7 +2,11 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Laravel\Sanctum\Exceptions\MissingAbilityException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -37,5 +41,34 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function render($request, Throwable $e)
+    {
+        if($e instanceof NotFoundHttpException){
+            return response()->json([
+                'message' => 'Not Found.'
+            ], 404);
+        }
+
+        if($e instanceof MethodNotAllowedHttpException){
+            return response()->json([
+                'message' => 'Method Not Allowed.'
+            ], 405);
+        }
+
+        if($e instanceof MissingAbilityException){
+            return response()->json([
+                'message' => 'Access Denied.'
+            ], 403);
+        }
+
+        if($e instanceof  AuthorizationException ){
+            return response()->json([
+                'message' => 'This Action Is Unauthorized.'
+            ], 403);
+        }
+
+        return parent::render($request, $e);
     }
 }

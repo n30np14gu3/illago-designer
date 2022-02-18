@@ -2,20 +2,19 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Modules\BaseResponseErrors;
+use Closure;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 
 class Authenticate extends Middleware
 {
-    /**
-     * Get the path the user should be redirected to when they are not authenticated.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return string|null
-     */
-    protected function redirectTo($request)
+    use BaseResponseErrors;
+
+    public function handle($request, Closure $next, ...$guards)
     {
-        if (! $request->expectsJson()) {
-            return route('login');
-        }
+        if(!auth()->check())
+            return $this->e401();
+
+        return $next($request);
     }
 }
