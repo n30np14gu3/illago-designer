@@ -18,12 +18,20 @@ class DesignController extends Controller
      */
     public function list(GetDesignListRequest $request): array
     {
+        $count = DesignPreset::count();
         $design_list = DesignPreset::query()->select('*');
         if($request->get('id') === null){
             if($request->get('count') !== null)
                 $design_list = $design_list->take($request->get('count'));
             if($request->get('offset') !== null)
-                $design_list = $design_list->skip($request->get('offset'));
+            {
+                if($request->get('count') !== null)
+                    $design_list = $design_list->skip($request->get('offset'));
+                else{
+                    $limit = $count - (int)$request->get('offset');
+                    $design_list = $design_list->skip($request->get('offset'))->take($limit);
+                }
+            }
 
             $design_list = $design_list->get()->makeHidden(['blob']);
         }
